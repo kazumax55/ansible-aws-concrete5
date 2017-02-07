@@ -1,0 +1,83 @@
+---
+  - name: install httpd
+    yum:
+      pkg=httpd24
+      state=present
+  - name: create DocumentRoot Dir
+    file:
+      path=/var/www/{{ domain }}/htdocs
+      recurse=yes
+      state=directory
+      mode=755
+      owner=root
+      group=root
+  - name: create vhosts DocumentRoot Dir
+    file:
+      path=/var/www/{{ item }}/htdocs
+      recurse=yes
+      state=directory
+      mode=755
+      owner=root
+      group=root
+    with_items:
+      vhosts
+    when: vhosts
+  - name: change mode LogDir
+    file: 
+      path=/var/log/httpd/
+      state=directory
+      mode=755
+  - name: create LogDir
+    file: 
+      path=/var/log/httpd/{{ domain }}
+      recurse=yes
+      state=directory
+      mode=755
+      owner=root
+      group=root
+  - name: create vhosts LogDir
+    file:
+      path=/var/log/httpd/{{ item }}
+      recurse=yes
+      state=directory
+      mode=755
+      owner=root
+      group=root
+    with_items:
+      vhosts
+    when: vhosts
+  - name: create index.html
+    template:
+      src=index.html.j2
+      dest=/var/www/{{ domain }}/htdocs/index.html
+  - name: create vhosts index.html
+    template:
+      src=index_vhosts.html.j2
+      dest=/var/www/{{ item }}/htdocs/index.html
+    with_items:
+      vhosts
+    when: vhosts
+  - name: copy status.html
+    copy:
+      src=status.html
+      dest=/var/www/{{ domain }}/htdocs/status.html
+  - name: copy security.conf
+    copy:
+      src=security.conf
+      dest=/etc/httpd/conf.d/security.conf
+  - name: create vhosts.conf
+    template:
+      src=vhosts.conf.j2
+      dest=/etc/httpd/conf.d/vhosts.conf
+    notify: restart httpd
+    when: vhosts
+  - name: create httpd.conf
+    template:
+      src=httpd.conf.j2
+      dest=/etc/httpd/conf/httpd.conf
+    notify: restart httpd
+  - name: check httpd status
+    service:
+      name=httpd
+      state=started
+      enabled=yes

@@ -1,0 +1,26 @@
+{% for vhost in vhosts %}
+<VirtualHost *:80>
+    ServerAdmin wheel@{{ domain }}
+    ServerName {{ vhost }}
+    DocumentRoot "/var/www/{{ vhost }}/htdocs"
+
+    <Directory "/var/www/{{ vhost }}/htdocs">
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog "|/usr/sbin/rotatelogs /var/log/httpd/{{ vhost }}/error_log.%Y%m%d 86400"
+    <IfModule log_config_module>
+        LogFormat "%{X-Forwarded-For}i %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+        LogFormat "%h %l %u %t \"%r\" %>s %b" common
+
+        <IfModule logio_module>
+          # You need to enable mod_logio.c to use %I and %O
+          LogFormat "%{X-Forwarded-For}i %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %I %O" combinedio
+        </IfModule>
+
+        CustomLog "|/usr/sbin/rotatelogs /var/log/httpd/{{ vhost }}/access_log.%Y%m%d 86400" combined
+    </IfModule>
+</VirtualHost>
+{% endfor %}

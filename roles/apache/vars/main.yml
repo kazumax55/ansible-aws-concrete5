@@ -1,0 +1,8 @@
+http_port: 80
+domain: example.com
+vhosts: false
+# -- vhosts設定例 --
+#vhosts:
+#  - app.example.com
+#  - cms.example.com
+# ### 複数のホスト毎にドメインを設定したい場合はhost_varsに定義すること。
